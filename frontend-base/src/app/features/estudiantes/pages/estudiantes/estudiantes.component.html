@@ -1,204 +1,191 @@
-<h2 class="titulo"> Gestion de Estudiantes </h2>
+<h2 class="titulo">Gestión de Estudiantes</h2>
 
+<!-- ── ESTADO DEL FORMULARIO ── -->
+<div class="form-status-bar">
+  <span class="status-badge" [ngClass]="{
+    'badge-pristine': estudianteForm.pristine,
+    'badge-dirty':    estudianteForm.dirty && estudianteForm.invalid,
+    'badge-valid':    estudianteForm.valid
+  }">
+    <ng-container *ngIf="estudianteForm.pristine">⬜ Sin cambios</ng-container>
+    <ng-container *ngIf="estudianteForm.dirty && estudianteForm.invalid">⚠️ Formulario incompleto</ng-container>
+    <ng-container *ngIf="estudianteForm.valid">✅ Formulario válido</ng-container>
+  </span>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" *ngIf="toast" [ngClass]="{
+  'toast-exito': toast.tipo === 'exito',
+  'toast-info':  toast.tipo === 'info',
+  'toast-error': toast.tipo === 'error'
+}">
+  {{ toast.mensaje }}
+</div>
 
 <div class="container">
 
-  <!-- FORMULARIO -->
+  <!-- ════════════════════════
+       FORMULARIO
+  ════════════════════════ -->
   <div class="formulario">
 
-    <h3>
-      {{
-        editando
-          ? 'Editar Estudiante'
-          : 'Registrar Estudiante'
-      }}
-    </h3>
+    <h3>{{ editando ? 'Editar Estudiante' : 'Registrar Estudiante' }}</h3>
 
-    <form
-      [formGroup]="estudianteForm"
-      (ngSubmit)="guardarEstudiante()">
+    <!-- INDICADOR DE PASOS -->
+    <div class="steps-indicator">
+      <div class="step" [ngClass]="{ 'step-active': paso === 1, 'step-done': paso > 1 }">
+        <span class="step-number">1</span>
+        <span class="step-label">Datos personales</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step" [ngClass]="{ 'step-active': paso === 2 }">
+        <span class="step-number">2</span>
+        <span class="step-label">Datos académicos</span>
+      </div>
+    </div>
 
-      <!-- PASO 1 -->
+    <form [formGroup]="estudianteForm" (ngSubmit)="guardarEstudiante()" novalidate>
+
+      <!-- ── PASO 1 ── -->
       <div *ngIf="paso === 1">
 
         <div class="doble">
 
-          <div>
-            <label>Nombre</label>
-
-            <input
-              type="text"
-              placeholder="Ingrese nombre"
-              formControlName="nombre">
+          <div class="campo-grupo">
+            <label>Nombre <span class="requerido">*</span></label>
+            <input type="text" placeholder="Ingrese nombre" formControlName="nombre"
+              [ngClass]="{ 'input-invalido': campoInvalido('nombre'), 'input-valido': campoValido('nombre') }">
+            <div class="error-msg" *ngIf="campoInvalido('nombre')">
+              <span *ngIf="f['nombre'].errors?.['required']">El nombre es obligatorio.</span>
+              <span *ngIf="f['nombre'].errors?.['minlength']">Mínimo 2 caracteres.</span>
+            </div>
           </div>
 
-          <div>
-            <label>Apellido</label>
-
-            <input
-              type="text"
-              placeholder="Ingrese apellido"
-              formControlName="apellido">
-          </div>
-
-        </div>
-
-        <div class="doble">
-
-          <div>
-            <label>Correo</label>
-
-            <input
-              type="email"
-              placeholder="Ingrese correo"
-              formControlName="correo">
-          </div>
-
-          <div>
-            <label>Teléfono</label>
-
-            <input
-              type="text"
-              placeholder="Ingrese teléfono"
-              formControlName="telefono">
+          <div class="campo-grupo">
+            <label>Apellido <span class="requerido">*</span></label>
+            <input type="text" placeholder="Ingrese apellido" formControlName="apellido"
+              [ngClass]="{ 'input-invalido': campoInvalido('apellido'), 'input-valido': campoValido('apellido') }">
+            <div class="error-msg" *ngIf="campoInvalido('apellido')">
+              <span *ngIf="f['apellido'].errors?.['required']">El apellido es obligatorio.</span>
+            </div>
           </div>
 
         </div>
 
         <div class="doble">
 
-          <div>
-            <label>Edad</label>
-
-            <input
-              type="number"
-              placeholder="Ingrese edad"
-              formControlName="edad">
+          <div class="campo-grupo">
+            <label>Correo <span class="requerido">*</span></label>
+            <input type="email" placeholder="Ingrese correo" formControlName="correo"
+              [ngClass]="{ 'input-invalido': campoInvalido('correo'), 'input-valido': campoValido('correo') }">
+            <div class="error-msg" *ngIf="campoInvalido('correo')">
+              <span *ngIf="f['correo'].errors?.['required']">El correo es obligatorio.</span>
+              <span *ngIf="f['correo'].errors?.['email']">Ingrese un correo válido.</span>
+            </div>
           </div>
 
-          <div>
-            <label>Código</label>
-
-            <input
-              type="text"
-              placeholder="Ingrese código"
-              formControlName="codigo">
+          <div class="campo-grupo">
+            <label>Teléfono <span class="requerido">*</span></label>
+            <input type="text" placeholder="Ej: +593987654321" formControlName="telefono"
+              [ngClass]="{ 'input-invalido': campoInvalido('telefono'), 'input-valido': campoValido('telefono') }">
+            <div class="error-msg" *ngIf="campoInvalido('telefono')">
+              <span *ngIf="f['telefono'].errors?.['required']">El teléfono es obligatorio.</span>
+              <span *ngIf="f['telefono'].errors?.['pattern']">Formato inválido (7-15 dígitos).</span>
+            </div>
           </div>
 
         </div>
 
-        <!-- BOTÓN -->
+        <div class="doble">
+
+          <div class="campo-grupo">
+            <label>Edad <span class="requerido">*</span></label>
+            <input type="number" placeholder="Ingrese edad" formControlName="edad"
+              [ngClass]="{ 'input-invalido': campoInvalido('edad'), 'input-valido': campoValido('edad') }">
+            <div class="error-msg" *ngIf="campoInvalido('edad')">
+              <span *ngIf="f['edad'].errors?.['required']">La edad es obligatoria.</span>
+              <span *ngIf="f['edad'].errors?.['min']">La edad mínima es 16 años.</span>
+              <span *ngIf="f['edad'].errors?.['max']">La edad máxima es 100 años.</span>
+            </div>
+          </div>
+
+          <div class="campo-grupo">
+            <label>Código <span class="requerido">*</span></label>
+            <input type="text" placeholder="Ingrese código" formControlName="codigo"
+              [ngClass]="{ 'input-invalido': campoInvalido('codigo'), 'input-valido': campoValido('codigo') }">
+            <div class="error-msg" *ngIf="campoInvalido('codigo')">
+              <span *ngIf="f['codigo'].errors?.['required']">El código es obligatorio.</span>
+              <span *ngIf="f['codigo'].errors?.['minlength']">Mínimo 4 caracteres.</span>
+            </div>
+          </div>
+
+        </div>
+
         <div class="acciones-form">
-
-          <button
-            type="button"
-            class="btn-next"
-            (click)="paso = 2">
-
-            Siguiente ➜
-
+          <button type="button" class="btn-back" *ngIf="editando" (click)="cancelarEdicion()">
+            ✕ Cancelar
           </button>
-
+          <button type="button" class="btn-next" (click)="avanzarPaso2()">
+            Siguiente ➜
+          </button>
         </div>
 
       </div>
 
-      <!-- PASO 2 -->
+      <!-- ── PASO 2 ── -->
       <div *ngIf="paso === 2">
 
         <div class="grupo-inputs">
 
-          <div>
-            <label>Carrera</label>
-
-            <select formControlName="carrera">
-
-              <option value="">
-                Seleccione carrera
-              </option>
-
-              <option>
-                Ingeniería de Sistemas
-              </option>
-
-              <option>
-                Diseño Gráfico
-              </option>
-
-              <option>
-                Marketing
-              </option>
-
-              <option>
-                Administración
-              </option>
-
+          <div class="campo-grupo">
+            <label>Carrera <span class="requerido">*</span></label>
+            <select formControlName="carrera"
+              [ngClass]="{ 'input-invalido': campoInvalido('carrera'), 'input-valido': campoValido('carrera') }">
+              <option value="">Seleccione carrera</option>
+              <option>Ingeniería de Sistemas</option>
+              <option>Diseño Gráfico</option>
+              <option>Marketing</option>
+              <option>Administración</option>
             </select>
+            <div class="error-msg" *ngIf="campoInvalido('carrera')">
+              <span *ngIf="f['carrera'].errors?.['required']">Seleccione una carrera.</span>
+            </div>
           </div>
 
-          <div>
+          <div class="campo-grupo">
             <label>Género</label>
-
             <select formControlName="genero">
-
-              <option value="">
-                Seleccione género
-              </option>
-
-              <option>
-                Masculino
-              </option>
-
-              <option>
-                Femenino
-              </option>
-
+              <option value="">Seleccione género</option>
+              <option>Masculino</option>
+              <option>Femenino</option>
             </select>
           </div>
 
         </div>
 
-        <div>
+        <div class="campo-grupo">
           <label>Fecha de Nacimiento</label>
-
-          <input
-            type="date"
-            formControlName="fechaNacimiento">
+          <input type="date" formControlName="fechaNacimiento">
         </div>
 
-        <div>
-          <label>Dirección</label>
-
-          <textarea
-            placeholder="Ingrese dirección"
-            formControlName="direccion">
+        <div class="campo-grupo">
+          <label>Dirección <span class="requerido">*</span></label>
+          <textarea placeholder="Ingrese dirección completa" formControlName="direccion"
+            [ngClass]="{ 'input-invalido': campoInvalido('direccion'), 'input-valido': campoValido('direccion') }">
           </textarea>
+          <div class="error-msg" *ngIf="campoInvalido('direccion')">
+            <span *ngIf="f['direccion'].errors?.['required']">La dirección es obligatoria.</span>
+            <span *ngIf="f['direccion'].errors?.['minlength']">Mínimo 10 caracteres.</span>
+          </div>
         </div>
 
-        <!-- BOTONES -->
         <div class="acciones-form">
-
-          <button
-            type="button"
-            class="btn-back"
-            (click)="paso = 1">
-
-            ⬅ Atrás
-
+          <button type="button" class="btn-back" (click)="paso = 1">⬅ Atrás</button>
+          <button type="submit" class="btn-save"
+            [disabled]="estudianteForm.invalid"
+            [ngClass]="{ 'btn-disabled': estudianteForm.invalid }">
+            {{ editando ? '💾 Actualizar' : '💾 Guardar' }}
           </button>
-
-          <button
-            type="submit"
-            class="btn-save">
-
-            {{
-              editando
-                ? 'Actualizar'
-                : 'Guardar'
-            }}
-
-          </button>
-
         </div>
 
       </div>
@@ -207,80 +194,110 @@
 
   </div>
 
-  <!-- TABLA -->
+  <!-- ════════════════════════
+       PANEL DERECHO (TABLA)
+  ════════════════════════ -->
   <div class="lista">
 
-    <h3>
-      Lista de Estudiantes
-    </h3>
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab" [ngClass]="{ 'tab-active': vistaActual === 'activos' }"
+        (click)="cambiarVista('activos')">
+        👤 Activos
+        <span class="badge-count">{{ estudiantes.length }}</span>
+      </button>
+      <button class="tab" [ngClass]="{ 'tab-active': vistaActual === 'papelera' }"
+        (click)="cambiarVista('papelera')">
+        🗑️ Papelera
+        <span class="badge-count" [ngClass]="{ 'badge-count-red': papelera.length > 0 }">
+          {{ papelera.length }}
+        </span>
+      </button>
+    </div>
 
-    <div class="table-container">
+    <!-- ── VISTA ACTIVOS ── -->
+    <div *ngIf="vistaActual === 'activos'">
 
-      <table>
+      <p class="tabla-vacia" *ngIf="estudiantes.length === 0">
+        No hay estudiantes registrados aún.
+      </p>
 
-        <thead>
+      <div class="table-container" *ngIf="estudiantes.length > 0">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Carrera</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let estudiante of estudiantes; let i = index">
+              <td class="td-id">{{ estudiante.id }}</td>
+              <td>{{ estudiante.nombre }} {{ estudiante.apellido }}</td>
+              <td>{{ estudiante.correo }}</td>
+              <td>{{ estudiante.carrera }}</td>
+              <td class="acciones-tabla">
+                <button class="btn-details" (click)="verDetalles(estudiante)" title="Ver detalles">
+                  👁
+                </button>
+                <button class="btn-edit" (click)="editarEstudiante(estudiante, i)" title="Editar">
+                  ✏️
+                </button>
+                <button class="btn-delete" (click)="confirmarEliminar(i)" title="Eliminar">
+                  🗑
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-          <tr>
+    </div>
 
-            <th>Nombre</th>
-            <th>Correo</th>
-            <th>Carrera</th>
-            <th>Acciones</th>
+    <!-- ── VISTA PAPELERA ── -->
+    <div *ngIf="vistaActual === 'papelera'">
 
-          </tr>
+      <div class="papelera-header" *ngIf="papelera.length > 0">
+        <p class="papelera-aviso">Los estudiantes en papelera pueden ser restaurados.</p>
+        <button class="btn-vaciar" (click)="vaciarPapelera()">🗑 Vaciar papelera</button>
+      </div>
 
-        </thead>
+      <p class="tabla-vacia" *ngIf="papelera.length === 0">
+        La papelera está vacía.
+      </p>
 
-        <tbody>
-
-          <tr
-            *ngFor="
-              let estudiante of estudiantes;
-              let i = index
-            ">
-
-            <td>
-              {{ estudiante.nombre }}
-              {{ estudiante.apellido }}
-            </td>
-
-            <td>{{ estudiante.correo }}</td>
-
-            <td>{{ estudiante.carrera }}</td>
-
-            <td class="acciones-tabla">
-
-              <button
-                class="btn-details"
-                (click)="estudianteSeleccionado = estudiante">
-
-                Ver Detalles
-
-              </button>
-
-              <button
-                class="btn-edit"
-                (click)="editarEstudiante(estudiante, i)">
-
-                Editar
-
-              </button>
-
-              <button
-                class="btn-delete"
-                (click)="eliminarEstudiante(i)">
-
-                Eliminar
-
-              </button>
-
-            </td>
-
-          </tr>
-
-        </tbody>
-
-      </table>
+      <div class="table-container" *ngIf="papelera.length > 0">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Carrera</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let estudiante of papelera; let i = index" class="fila-eliminada">
+              <td class="td-id">{{ estudiante.id }}</td>
+              <td>{{ estudiante.nombre }} {{ estudiante.apellido }}</td>
+              <td>{{ estudiante.correo }}</td>
+              <td>{{ estudiante.carrera }}</td>
+              <td class="acciones-tabla">
+                <button class="btn-restore" (click)="restaurarEstudiante(i)" title="Restaurar">
+                  ♻️ Restaurar
+                </button>
+                <button class="btn-delete-perm" (click)="eliminarPermanente(i)" title="Eliminar permanentemente">
+                  ✕ Eliminar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
     </div>
 
@@ -288,71 +305,75 @@
 
 </div>
 
-<!-- MODAL -->
-<div
-  class="modal"
-  *ngIf="estudianteSeleccionado">
+<!-- ════════════════════════
+     MODAL — VER DETALLES
+════════════════════════ -->
+<div class="modal" *ngIf="estudianteSeleccionado" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
 
-  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Información del Estudiante</h2>
+      <span class="modal-id">ID #{{ estudianteSeleccionado.id }}</span>
+    </div>
 
-    <h2>
-      Información del Estudiante
-    </h2>
+    <div class="modal-grid">
+      <div class="modal-item">
+        <span class="modal-label">Nombre</span>
+        <span>{{ estudianteSeleccionado.nombre }} {{ estudianteSeleccionado.apellido }}</span>
+      </div>
+      <div class="modal-item">
+        <span class="modal-label">Correo</span>
+        <span>{{ estudianteSeleccionado.correo }}</span>
+      </div>
+      <div class="modal-item">
+        <span class="modal-label">Teléfono</span>
+        <span>{{ estudianteSeleccionado.telefono }}</span>
+      </div>
+      <div class="modal-item">
+        <span class="modal-label">Edad</span>
+        <span>{{ estudianteSeleccionado.edad }} años</span>
+      </div>
+      <div class="modal-item">
+        <span class="modal-label">Carrera</span>
+        <span>{{ estudianteSeleccionado.carrera }}</span>
+      </div>
+      <div class="modal-item">
+        <span class="modal-label">Código</span>
+        <span>{{ estudianteSeleccionado.codigo }}</span>
+      </div>
+      <div class="modal-item">
+        <span class="modal-label">Fecha de Nacimiento</span>
+        <span>{{ estudianteSeleccionado.fechaNacimiento || '—' }}</span>
+      </div>
+      <div class="modal-item">
+        <span class="modal-label">Género</span>
+        <span>{{ estudianteSeleccionado.genero || '—' }}</span>
+      </div>
+      <div class="modal-item modal-item-full">
+        <span class="modal-label">Dirección</span>
+        <span>{{ estudianteSeleccionado.direccion }}</span>
+      </div>
+    </div>
 
-    <p>
-      <strong>Nombre:</strong>
-      {{ estudianteSeleccionado.nombre }}
-      {{ estudianteSeleccionado.apellido }}
-    </p>
-
-    <p>
-      <strong>Correo:</strong>
-      {{ estudianteSeleccionado.correo }}
-    </p>
-
-    <p>
-      <strong>Teléfono:</strong>
-      {{ estudianteSeleccionado.telefono }}
-    </p>
-
-    <p>
-      <strong>Edad:</strong>
-      {{ estudianteSeleccionado.edad }}
-    </p>
-
-    <p>
-      <strong>Carrera:</strong>
-      {{ estudianteSeleccionado.carrera }}
-    </p>
-
-    <p>
-      <strong>Código:</strong>
-      {{ estudianteSeleccionado.codigo }}
-    </p>
-
-    <p>
-      <strong>Fecha:</strong>
-      {{ estudianteSeleccionado.fechaNacimiento }}
-    </p>
-
-    <p>
-      <strong>Género:</strong>
-      {{ estudianteSeleccionado.genero }}
-    </p>
-
-    <p>
-      <strong>Dirección:</strong>
-      {{ estudianteSeleccionado.direccion }}
-    </p>
-
-    <button
-      class="btn-close"
-      (click)="estudianteSeleccionado = null">
-
-      Cerrar
-
-    </button>
+    <button class="btn-close" (click)="cerrarModal()">Cerrar</button>
 
   </div>
+</div>
 
+<!-- ════════════════════════
+     MODAL — CONFIRMAR ELIMINAR
+════════════════════════ -->
+<div class="modal" *ngIf="mostrarConfirmacion" (click)="cancelarEliminar()">
+  <div class="modal-content modal-confirm" (click)="$event.stopPropagation()">
+
+    <div class="confirm-icon">🗑️</div>
+    <h3>¿Mover a la papelera?</h3>
+    <p>El estudiante será movido a la papelera y podrás restaurarlo después.</p>
+
+    <div class="confirm-acciones">
+      <button class="btn-back" (click)="cancelarEliminar()">Cancelar</button>
+      <button class="btn-delete-confirm" (click)="eliminarEstudiante()">Sí, eliminar</button>
+    </div>
+
+  </div>
 </div>
